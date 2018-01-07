@@ -2,6 +2,7 @@ import requests, bs4
 import copy
 from selenium import webdriver
 import time
+import os
 url = str(input("Paste url you want to prettify: "))
 
 res = requests.get(url)
@@ -12,3 +13,6 @@ driver = webdriver.Chrome()
 driver.get("http://htmlformatter.com/")
 time.sleep(25)
 driver.quit()
+
+clear = lambda : os.system('tput reset')
+clear()
