@@ -10,7 +10,7 @@ soup = bs4.BeautifulSoup(res.text, 'html.parser')
 print(soup.prettify)
 time.sleep(5)									#time to copy html to clipboard
 driver = webdriver.Chrome()
-driver.get("http://htmlformatter.com/")
+driver.get("https://www.freeformatter.com/html-formatter.html")
 time.sleep(25)
 driver.quit()
 
