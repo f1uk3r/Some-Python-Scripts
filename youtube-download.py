@@ -17,7 +17,10 @@ allChannels = [['Zack Lee', 'https://www.youtube.com/channel/UCn3-IBtTKq8ZTV5hiZ
 			   ['Nerdwriter', 'https://www.youtube.com/user/Nerdwriter1'],
 			   ['Aleczandxr', 'https://www.youtube.com/channel/UCUUYiPd9TKE62mUn-lJ29AQ'],
 			   ['Kurzgesagt - In a Nutshell', 'https://www.youtube.com/user/Kurzgesagt'],
-
+			   ['Satya Show', 'https://www.youtube.com/user/LowBudgetSatyaShow'],
+			   ['TVF', 'https://www.youtube.com/user/TheViralFeverVideos'],
+			   ['Mike Korzemba', 'https://www.youtube.com/channel/UCp3dgMf1OUP2XqOpyOY2bzQ'],
+			   ['JxmyHighroller', 'https://www.youtube.com/user/andergra000'],
 			   ]
 #Number of videos to list; Keep it less than 30
 listVid = 5
@@ -69,6 +72,7 @@ while channelIndex != 0:
 					video = pafy.new(url)
 					streams = video.allstreams
 					for s in streams:
+						#print(s.resolution, s.extension)
 						if quality == 1080:
 							if s.extension == "webm" and s.quality == "1920x1080":
 								print(video.title + " is downloading ...")
