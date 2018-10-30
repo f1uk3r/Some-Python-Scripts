@@ -221,5 +221,5 @@ body += '''
 ||
 |:-:|
 |^[bot-script](https://github.com/f1uk3r/Some-Python-Scripts/blob/master/reddit-nba-bot/reddit-boxscore-bot.py) ^by ^/u/f1uk3r|  '''
-#print(body)
-reddit.subreddit('nba').submit(tabulateList[game]["title"], selftext=body)
+#print(body) #uncomment print statement to see body on console
+reddit.subreddit('nba').submit(tabulateList[game]["title"], selftext=body) #change nba to subreddit name if posting to other subreddits
