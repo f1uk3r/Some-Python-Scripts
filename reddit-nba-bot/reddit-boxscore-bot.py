@@ -52,6 +52,7 @@ def requestApi(url):
   req = requests.get(url)
   return req.json()
 
+#appending + sign in front of biggest lead and +/- stats
 def appendPlusMinus(someStat):
   if someStat.isdigit():
     if int(someStat)>0:
@@ -72,7 +73,8 @@ def findPlayerName(dataPlayersLeague, playerId):
 
 #finding date of games
 now = datetime.datetime.now()
-date = str(now.year) + str(now.month) + str(now.day-1)
+date = str(now.year) + str(now.month) + str(now.day-1) #check the date before using script
+#print(date)
 
 #getting today's game
 data = requestApi("http://data.nba.net/prod/v1/" + date + "/scoreboard.json")
@@ -85,7 +87,7 @@ header = ["index","gameId", "title", "gameDuration"]
 tabulateList = []
 index = 1
 for each in games:
-  if each["isGameActivated"] == False and each["endTimeUTC"] != "":
+  if each["isGameActivated"] == False and each["endTimeUTC"] != "":  #a finished game should not have empty endTime
     gameId = each["gameId"]
     gameDuration = each["gameDuration"]["hours"] + ":" + each["gameDuration"]["minutes"]
     visitorTeam = teamDict[each["vTeam"]["triCode"]][0] + " (" + each["vTeam"]["win"] + "-" + each["vTeam"]["loss"] + ")"
@@ -114,7 +116,6 @@ for each in games:
 
 game = int(input("Choose the game (by index) you want to make Post Game Thread of: ")) -1
 dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + date + "/" + str(tabulateList[game]["gameId"]) + "_boxscore.json")
-
 basicGameData = dataBoxScore["basicGameData"] #contains all the data related to this game
 allStats = dataBoxScore["stats"]  #contains all the stats of this game
 playerStats = allStats["activePlayers"] #contains all the stats of players of the team
@@ -170,7 +171,7 @@ body += '''
 |&nbsp;|		
 |**TEAM STATS**|
 
-|**Team**|**PTS**|**FG**|**FG%**|**3P**|**3P%**|**FT**|**FT%**|**OREB**|**TREB**|**ASS**|**PF**|**STL**|**TO**|**BLK**|
+|**Team**|**PTS**|**FG**|**FG%**|**3P**|**3P%**|**FT**|**FT%**|**OREB**|**TREB**|**AST**|**PF**|**STL**|**TO**|**BLK**|
 |:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|
 |''' + teamDict[tabulateList[game]["visitorTeam"]][0] + "|" + allStats["vTeam"]["totals"]["points"] + "|" + allStats["vTeam"]["totals"]["fgm"] + "-" + allStats["vTeam"]["totals"]["fga"] + "|" + allStats["vTeam"]["totals"]["fgp"] + "%|" + allStats["vTeam"]["totals"]["tpm"] + "-" + allStats["vTeam"]["totals"]["tpa"] + "|" + allStats["vTeam"]["totals"]["tpp"] + "%|" + allStats["vTeam"]["totals"]["ftm"] + "-" + allStats["vTeam"]["totals"]["fta"] + "|" + allStats["vTeam"]["totals"]["ftp"] + "%|" + allStats["vTeam"]["totals"]["offReb"] + "|" + allStats["vTeam"]["totals"]["totReb"] + "|" + allStats["vTeam"]["totals"]["assists"] + "|" + allStats["vTeam"]["totals"]["pFouls"] + "|" + allStats["vTeam"]["totals"]["steals"] + "|" + allStats["vTeam"]["totals"]["turnovers"] + "|" + allStats["vTeam"]["totals"]["blocks"] + '''|
 |''' + teamDict[tabulateList[game]["homeTeam"]][0] + "|" + allStats["hTeam"]["totals"]["points"] + "|" + allStats["hTeam"]["totals"]["fgm"] + "-" + allStats["hTeam"]["totals"]["fga"] + "|" + allStats["hTeam"]["totals"]["fgp"] + "%|" + allStats["hTeam"]["totals"]["tpm"] + "-" + allStats["hTeam"]["totals"]["tpa"] + "|" + allStats["hTeam"]["totals"]["tpp"] + "%|" + allStats["hTeam"]["totals"]["ftm"] + "-" + allStats["hTeam"]["totals"]["fta"] + "|" + allStats["hTeam"]["totals"]["ftp"] + "%|" + allStats["hTeam"]["totals"]["offReb"] + "|" + allStats["hTeam"]["totals"]["totReb"] + "|" + allStats["hTeam"]["totals"]["assists"] + "|" + allStats["hTeam"]["totals"]["pFouls"] + "|" + allStats["hTeam"]["totals"]["steals"] + "|" + allStats["hTeam"]["totals"]["turnovers"] + "|" + allStats["hTeam"]["totals"]["blocks"] + '''|
@@ -209,15 +210,16 @@ for i in range(len(playerStats)):
 
 body += '''**[](/''' + tabulateList[game]["homeTeam"] + ") " + teamDict[tabulateList[game]["homeTeam"]][0].rsplit(None, 1)[-1].upper() + '''**|**MIN**|**FGM-A**|**3PM-A**|**FTM-A**|**ORB**|**DRB**|**REB**|**AST**|**STL**|**BLK**|**TO**|**PF**|**+/-**|**PTS**|
 '''
-#home team
+#home team players
 for i in range(len(playerStats)):
   if playerStats[i]["teamId"] != tabulateList[game]["visitorTeamId"] and playerStats[i]["pos"] != "":
     body += "|" + findPlayerName(dataPlayersLeague, playerStats[i]["personId"]) + "^" + playerStats[i]["pos"] + "|" + playerStats[i]["min"] + "|" + playerStats[i]["fgm"] + "-" + playerStats[i]["fga"] + "|" + playerStats[i]["tpm"] + "-" + playerStats[i]["tpa"] + "|" + playerStats[i]["ftm"] + "-" + playerStats[i]["fta"] + "|" + playerStats[i]["offReb"] + "|" + playerStats[i]["defReb"] + "|" + playerStats[i]["totReb"] + "|" + playerStats[i]["assists"] + "|" + playerStats[i]["steals"] + "|" + playerStats[i]["blocks"] + "|" + playerStats[i]["turnovers"] + "|" + playerStats[i]["pFouls"] + "|" + appendPlusMinus(playerStats[i]["plusMinus"]) + "|" + playerStats[i]["points"] + "|\n"
   elif playerStats[i]["teamId"] != tabulateList[game]["visitorTeamId"]:
     body += "|" + findPlayerName(dataPlayersLeague, playerStats[i]["personId"]) + "|" + playerStats[i]["min"] + "|" + playerStats[i]["fgm"] + "-" + playerStats[i]["fga"] + "|" + playerStats[i]["tpm"] + "-" + playerStats[i]["tpa"] + "|" + playerStats[i]["ftm"] + "-" + playerStats[i]["fta"] + "|" + playerStats[i]["offReb"] + "|" + playerStats[i]["defReb"] + "|" + playerStats[i]["totReb"] + "|" + playerStats[i]["assists"] + "|" + playerStats[i]["steals"] + "|" + playerStats[i]["blocks"] + "|" + playerStats[i]["turnovers"] + "|" + playerStats[i]["pFouls"] + "|" + appendPlusMinus(playerStats[i]["plusMinus"]) + "|" + playerStats[i]["points"] + "|\n"
+#footer
 body += '''
 ||
 |:-:|
-|^[bot-script](http://www.nbaboxscoregenerator.com) ^by ^/u/f1uk3r|  '''
+|^[bot-script](https://github.com/f1uk3r/Some-Python-Scripts/blob/master/reddit-nba-bot/reddit-boxscore-bot.py) ^by ^/u/f1uk3r|  '''
 #print(body)
-reddit.subreddit('test').submit(tabulateList[game]["title"], selftext=body)
+reddit.subreddit('nba').submit(tabulateList[game]["title"], selftext=body)
