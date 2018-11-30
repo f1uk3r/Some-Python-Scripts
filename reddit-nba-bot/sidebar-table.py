@@ -1,6 +1,7 @@
 import config
 import requests
 import json
+import praw
 from datetime import date, timedelta
 from tabulate import tabulate
 
@@ -38,16 +39,28 @@ teamDict = {
   "WAS": ["Washington Wizards", "27", "washington-wizards-", "/r/washingtonwizards", "1610612764"]
 }
 
+#logging in to get reddit class
+reddit = praw.Reddit(username = config.username, 
+                    password = config.password,
+                    client_id = config.client_id, 
+                    client_secret = config.client_secret,
+                    user_agent = "nbaspurs sidebar test (by /u/f1uk3r)")
+
+#change it to "nbaspurs" for update on main subreddit
+sub = "33bourCSS"
+
 #finding player's name when player's ID is given, dataPlayersLeague is a list of all players
 def findPlayerName(dataPlayersLeague, playerId):
   for each in dataPlayersLeague:
     if each["personId"] == playerId:
       return each["firstName"] + " " + each["lastName"]
 
+#getting json data from requsted url
 def requestApi(url):
   req = requests.get(url)
   return req.json()
 
+#getting players data for players table
 def playerDataList(dataPlayersLeague, playerId):
   playerData = requestApi("http://data.nba.net/prod/v1/2018/players/" + str(playerId) + "_profile.json")
   playerCurrentData = playerData["league"]["standard"]["stats"]["latest"]
@@ -71,48 +84,63 @@ dateToday = now.strftime("%Y%m%d") #check the date before using script
 dateYesterday = yesterday.strftime("%Y%m%d")
 #print(date)
 
+#getting games which are to be displayed from all 82 games
 for i in range(len(allSpursGames)):
   if allSpursGames[i]["startDateEastern"] == dateToday or allSpursGames[i]["startDateEastern"] == dateYesterday:
     requiredSpursGames = [allSpursGames[i-2],allSpursGames[i-1],allSpursGames[i],allSpursGames[i+1],allSpursGames[i+2],allSpursGames[i+3]]
 
 #Sidebar body starts here
-
 sidebarBody = '''[Pounding the Rock](http://www.poundingtherock.com/) | [Spurstalk](http://www.spurstalk.com/forums/) | [Spurs Discord](https://discord.gg/rcvBDQ6)
 
 ------
-**[2018-2019 Spurs Schedule](http://www.nba.com/spurs/schedule/) | Record: 10-10**
+**[2018-2019 Spurs Schedule](http://www.nba.com/spurs/schedule/) | Record: '''
+
+#getting record from another json (can be improved by getting this record from schedule.json)
+conferenceStandings = requestApi("http://data.nba.net/prod/v1/current/standings_conference.json")
+westTeams = conferenceStandings["league"]["standard"]["conference"]["west"]
+for eachTeam in westTeams:
+  if eachTeam["teamId"] == "1610612759":
+    sidebarBody += eachTeam["win"] + "-" + eachTeam["loss"]
+
+#body continues
+sidebarBody += '''**
 
 ------
 
 | | | | | | | |
 :--:|:--:|:--:|:--:|:--:|:--:|:--:|'''
 
+#schedule part of the body
 for each in requiredSpursGames:
   if each["gameUrlCode"][9:12] == "SAS":
     sasIsAwayTeam = True
-  elif each["gameUrlCode"][-3:] == "SAS":
+  else:
     sasIsAwayTeam = False
-  if each["hTeam"]["score"]<each["vTeam"]["score"] and sasIsAwayTeam:
-    sasStatus = "W"
-    finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
-  elif each["hTeam"]["score"]<each["vTeam"]["score"] and sasIsAwayTeam==False:
-    sasStatus = "L"
-    finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
-  elif each["hTeam"]["score"]>each["vTeam"]["score"] and sasIsAwayTeam:
-    sasStatus = "L"
-    finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
-  elif each["hTeam"]["score"]>each["vTeam"]["score"] and sasIsAwayTeam==False:
-    sasStatus = "W"
-    finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
+  if each["hTeam"]["score"]!="":
+    if int(each["hTeam"]["score"])<int(each["vTeam"]["score"]) and sasIsAwayTeam:
+      sasStatus = "W"
+      finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
+    elif int(each["hTeam"]["score"])<int(each["vTeam"]["score"]) and sasIsAwayTeam==False:
+      sasStatus = "L"
+      finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
+    elif int(each["hTeam"]["score"])>int(each["vTeam"]["score"]) and sasIsAwayTeam:
+      sasStatus = "L"
+      finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
+    elif int(each["hTeam"]["score"])>int(each["vTeam"]["score"]) and sasIsAwayTeam==False:
+      sasStatus = "W"
+      finalCol = each["vTeam"]["score"] + "-" + each["hTeam"]["score"]
   else:
     sasStatus = each["startTimeEastern"]
     gameDetail = requestApi("http://data.nba.net/prod/v1/" + each["startDateEastern"] + "/" + each["gameId"] + "_boxscore.json")
     if sasIsAwayTeam:
-      finalCol = gameDetail["basicGameData"]["watch"]["broadcast"]["broadcasters"]["vTeam"][0]["shortName"]
+      print(gameDetail["basicGameData"]["watch"]["broadcast"]["broadcasters"]["vTeam"])
+      if len(gameDetail["basicGameData"]["watch"]["broadcast"]["broadcasters"]["vTeam"])!=0:
+        finalCol = gameDetail["basicGameData"]["watch"]["broadcast"]["broadcasters"]["vTeam"][0]["shortName"]
     else:
       finalCol = gameDetail["basicGameData"]["watch"]["broadcast"]["broadcasters"]["hTeam"][0]["shortName"]
-  sidebarBody += "\n" + each["startDateEastern"][4:6] + "/" + each["startDateEastern"][-2:] + " | [](" + each["gameUrlCode"][9:12] + ") | @ | [](" + each["gameUrlCode"][-3:] + ") | " + sasStatus + " | " + finalCol + " |"
+  sidebarBody += "\n" + each["startDateEastern"][4:6] + "/" + each["startDateEastern"][-2:] + " | [](" + teamDict[each["gameUrlCode"][9:12]][3] + ") | @ | [](" + teamDict[each["gameUrlCode"][-3:]][3] + ") | " + sasStatus + " | " + finalCol + " |"
 
+#body continues
 sidebarBody += '''
 
 | | | | | | | |
@@ -122,10 +150,10 @@ sidebarBody += '''
 #getting informations of players through API since the boxscore API lacks name of players
 dataPlayers = requestApi("http://data.nba.net/prod/v1/2018/players.json")
 dataPlayersLeague = dataPlayers["league"]["standard"] + dataPlayers["league"]["africa"] + dataPlayers["league"]["sacramento"] + dataPlayers["league"]["vegas"] + dataPlayers["league"]["utah"]
-
+#getting roster of spurs
 teamData = requestApi("http://data.nba.net/prod/v1/2018/teams/1610612759/roster.json")
 teamPlayers = teamData["league"]["standard"]["players"]
-
+#body is appended with the data of players
 for each in teamPlayers:
   player = playerDataList(dataPlayersLeague, each["personId"])
   if player != []:
@@ -133,6 +161,7 @@ for each in teamPlayers:
     for every in player:
       sidebarBody +=  every + " | "
 
+#body near the end
 sidebarBody += '''
 
 **BE NICE.**
@@ -176,4 +205,8 @@ Original content from your blog about the Spurs (or similar such content) is wel
 #####reddit#####
 * [](http://reddit.com)'''
 
-print(sidebarBody)
+#uncomment for testing
+#print(sidebarBody)
+
+#update sidebar here
+reddit.subreddit(sub).mod.update(description=sidebarBody)
