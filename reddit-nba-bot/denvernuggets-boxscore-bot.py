@@ -22,8 +22,8 @@ teamDict = {
   "GSW": ["Golden State Warriors", "09", "golden-state-warriors-", "http://np.reddit.com/r/warriors"],
   "HOU": ["Houston Rockets", "10", "houston-rockets-", "http://np.reddit.com/r/rockets"],
   "IND": ["Indiana Pacers", "11", "indiana-pacers-", "http://np.reddit.com/r/pacers"],
-  "LAC": ["Los Angles Clippers", "12", "los-angeles-clippers-", "http://np.reddit.com/r/laclippers"],
-  "LAL": ["Los Angles Lakers", "13", "los-angeles-lakers-", "http://np.reddit.com/r/lakers"],
+  "LAC": ["Los Angeles Clippers", "12", "los-angeles-clippers-", "http://np.reddit.com/r/laclippers"],
+  "LAL": ["Los Angeles Lakers", "13", "los-angeles-lakers-", "http://np.reddit.com/r/lakers"],
   "MEM": ["Memphis Grizzlies", "29", "memphis-grizzlies-", "http://np.reddit.com/r/memphisgrizzlies"],
   "MIA": ["Miami Heat", "14", "miami-heat-", "http://np.reddit.com/r/heat"],
   "MIL": ["Milwaukee Bucks", "15", "milwaukee-bucks-", "http://np.reddit.com/r/mkebucks"],
@@ -125,14 +125,14 @@ yahooUrl = "http://sports.yahoo.com/nba/" + teamDict[tabulateList[game]["visitor
 
 #Body of reddit post starts here
 body = '''	
-|[](/''' + tabulateList[game]["visitorTeam"] + ")**(" + tabulateList[game]["visitorTeamScore"]  + ")**|" + " [](/" + tabulateList[game]["homeTeam"] + ")** (" + tabulateList[game]["homeTeamScore"] + ''')**|
+|[](/''' + tabulateList[game]["visitorTeam"] + ")**(" + tabulateList[game]["visitorTeamScore"]  + ")**|" + " [](/" + tabulateList[game]["homeTeam"] + ")**(" + tabulateList[game]["homeTeamScore"] + ''')**|
 |:-:|:-:|
-|**Box Scores: [NBA](''' + nbaUrl + ") & [Yahoo](" + yahooUrl + ''')**|	
-|&nbsp;|	
+	
 
 						
 |**GAME SUMMARY**|
 |:-:|
+|**Box Scores: [NBA](''' + nbaUrl + ") & [Yahoo](" + yahooUrl + ''')**|	
 |**Location:** ''' + basicGameData["arena"]["name"] + "(" + basicGameData["attendance"] + "), **Duration:** " + tabulateList[game]["gameDuration"] + '''|
 |**Officials:** ''' + basicGameData["officials"]["formatted"][0]["firstNameLastName"] + ", " + basicGameData["officials"]["formatted"][1]["firstNameLastName"] + " and " + basicGameData["officials"]["formatted"][2]["firstNameLastName"] + '''|	
 
@@ -144,7 +144,7 @@ if len(basicGameData["vTeam"]["linescore"])==4:
 |:--|:--:|:--:|:--:|:--:|:--:|
 |''' + teamDict[tabulateList[game]["visitorTeam"]][0] + "|" + basicGameData["vTeam"]["linescore"][0]["score"] + "|" + basicGameData["vTeam"]["linescore"][1]["score"] + "|" + basicGameData["vTeam"]["linescore"][2]["score"] + "|" + basicGameData["vTeam"]["linescore"][3]["score"] + "|"+ tabulateList[game]["visitorTeamScore"] + '''|
 |''' + teamDict[tabulateList[game]["homeTeam"]][0] + "|" + basicGameData["hTeam"]["linescore"][0]["score"] + "|" + basicGameData["hTeam"]["linescore"][1]["score"] + "|" + basicGameData["hTeam"]["linescore"][2]["score"] + "|" + basicGameData["hTeam"]["linescore"][3]["score"] + "|"+ tabulateList[game]["homeTeamScore"] + '''|
-|&nbsp;|'''
+'''
 
 #condition for OT game
 elif len(basicGameData["vTeam"]["linescore"])>4:
@@ -164,7 +164,7 @@ elif len(basicGameData["vTeam"]["linescore"])>4:
   for i in range(len(basicGameData["hTeam"]["linescore"])):
     body += basicGameData["hTeam"]["linescore"][i]["score"] + "|"
   body += tabulateList[game]["homeTeamScore"] + '''|
-|&nbsp;|'''
+'''
 
 body += '''
 
@@ -182,7 +182,7 @@ body += '''
 |:--|:--:|:--:|:--:|:--:|:--:|
 |''' + teamDict[tabulateList[game]["visitorTeam"]][0] + "|" + appendPlusMinus(allStats["vTeam"]["biggestLead"]) + "|" + allStats["vTeam"]["longestRun"] + "|" + allStats["vTeam"]["pointsInPaint"] + "|" + allStats["vTeam"]["pointsOffTurnovers"] + "|" + allStats["vTeam"]["fastBreakPoints"] + '''|
 |''' + teamDict[tabulateList[game]["homeTeam"]][0] + "|" + appendPlusMinus(allStats["hTeam"]["biggestLead"]) + "|" + allStats["hTeam"]["longestRun"] + "|" + allStats["hTeam"]["pointsInPaint"] + "|" + allStats["hTeam"]["pointsOffTurnovers"] + "|" + allStats["hTeam"]["fastBreakPoints"] + '''|
-|&nbsp;|
+
 
 
 |**TEAM LEADERS**|
@@ -193,7 +193,7 @@ body += '''
 |:--|:--:|:--:|:--:|
 |''' + teamDict[tabulateList[game]["visitorTeam"]][0] + "|**" + allStats["vTeam"]["leaders"]["points"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["vTeam"]["leaders"]["points"]["players"][0]["personId"]) + "|**" + allStats["vTeam"]["leaders"]["rebounds"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["vTeam"]["leaders"]["rebounds"]["players"][0]["personId"])  + "|**" + allStats["vTeam"]["leaders"]["assists"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["vTeam"]["leaders"]["assists"]["players"][0]["personId"]) + '''|
 |''' + teamDict[tabulateList[game]["homeTeam"]][0] + "|**" + allStats["hTeam"]["leaders"]["points"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["hTeam"]["leaders"]["points"]["players"][0]["personId"]) + "|**" + allStats["hTeam"]["leaders"]["rebounds"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["hTeam"]["leaders"]["rebounds"]["players"][0]["personId"])  + "|**" + allStats["hTeam"]["leaders"]["assists"]["value"] + "** " + findPlayerName(dataPlayersLeague, allStats["hTeam"]["leaders"]["assists"]["players"][0]["personId"]) + '''|
-|&nbsp;|
+
 
 
 |**PLAYER STATS**|
@@ -227,5 +227,10 @@ body += '''
 |:-:|'''
 
 print(tabulateList[game]["title"])
-print(body) #uncomment print statement to see body on console
-#reddit.subreddit('NBASpurs').submit(tabulateList[game]["title"], selftext=body, send_replies=False) #change nba to subreddit name if posting to other subreddits
+#print(body) #uncomment print statement to see body on console
+#reddit.subreddit('denvernuggets').submit(tabulateList[game]["title"], selftext=body, send_replies=False) #change nba to subreddit name if posting to other subreddits
+
+for submission in reddit.subreddit('denvernuggets').search("post game thread", sort="hot", time_filter="day"):
+#if "r/NBA Game Threads Index + Daily Discussion" not in submission.title:
+  print(submission.title)
+  submission.reply(body)

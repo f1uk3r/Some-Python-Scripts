@@ -36,6 +36,8 @@ while game != 0 :
 						row.append(each.text.replace('(', '\n('))
 					tabulateList.append(row)
 			print(tabulate((tabulateList), header, tablefmt="grid"))
+			print(header)
+			print(tabulateList)
 	elif game == 0:
 		print("Thank You")
 	else:
