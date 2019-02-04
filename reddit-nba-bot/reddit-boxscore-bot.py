@@ -6,6 +6,7 @@ import config
 import requests
 import json
 from datetime import date, timedelta
+import random
 
 
 #Team Dictionary helps to make urls for boxscore and for full-forms of abbrevation of teams
@@ -41,7 +42,7 @@ teamDict = {
   "UTA": ["Utah Jazz", "26", "utah-jazz-", "http://np.reddit.com/r/utahjazz", "1610612762"],
   "WAS": ["Washington Wizards", "27", "washington-wizards-", "http://np.reddit.com/r/washingtonwizards", "1610612764"]
 }
-defeatSynonyms = ['defeat', 'blow out', 'destroy', 'obliterate', 'beat', 'edge out']
+defeatSynonyms = ['defeat', 'beat', 'blow out', 'level out', 'destroy', 'crush', 'walk all over', 'exterminate', 'slaughter', 'massacre' 'obliterate', 'eviscerate', 'annihilate', 'edge out', 'steal one against', 'hang on to defeat', 'snap']
 #getting a reddit instance by giving appropiate credentials
 reddit = praw.Reddit(username = config.username, 
                     password = config.password,
@@ -90,12 +91,16 @@ for each in games:
     gameDuration = each["gameDuration"]["hours"] + ":" + each["gameDuration"]["minutes"]
     visitorTeamScore = each["vTeam"]["score"]
     homeTeamScore = each["hTeam"]["score"]
-    if (abs(int(visitorTeamScore)-int(homeTeamScore))>20):
-      defeatWord = defeatSynonyms[1]
+    if (abs(int(visitorTeamScore)-int(homeTeamScore))<3):
+      defeatWord = random.choice(defeatSynonyms[13:15])
+    elif (abs(int(visitorTeamScore)-int(homeTeamScore))<6):
+      defeatWord = random.choice(defeatSynonyms[15:])
+    elif (abs(int(visitorTeamScore)-int(homeTeamScore))>20):
+      defeatWord = random.choice(defeatSynonyms[2:8])
     elif (abs(int(visitorTeamScore)-int(homeTeamScore))>40):
-      defeatWord = defeatSynonyms[2]
+      defeatWord = random.choice(defeatSynonyms[8:13])
     else:
-      defeatWord = defeatSynonyms[0]
+      defeatWord = random.choice(defeatSynonyms[:2])
 
     #when game is activated, win-loss fields aren't updated. Check isGameActivated and update win-loss manually.
     if each["isGameActivated"] == False:
@@ -143,7 +148,7 @@ if game in range(len(tabulateList)):
 |[](/''' + tabulateList[game]["visitorTeam"] + ") **" + tabulateList[game]["visitorTeamScore"]  + " - " + tabulateList[game]["homeTeamScore"] + "** [](/" + tabulateList[game]["homeTeam"] + ''')|
 |**Box Scores: [NBA](''' + nbaUrl + ") & [Yahoo](" + yahooUrl + ")**|"
 
-  response = reddit.subreddit('nba').submit(tabulateList[game]["title"], selftext=beforeEdit, send_replies=False)
+  response = reddit.subreddit('test').submit(tabulateList[game]["title"], selftext=beforeEdit, send_replies=False)
 
   #getting informations of players through API since the boxscore API lacks name of players
   dataPlayers = requestApi("http://data.nba.net/prod/v1/2018/players.json")
@@ -254,7 +259,7 @@ if game in range(len(tabulateList)):
 |:-:|
 |^[bot-script](https://github.com/f1uk3r/Some-Python-Scripts/blob/master/reddit-nba-bot/reddit-boxscore-bot.py) ^by ^/u/f1uk3r|  '''
   print(tabulateList[game]["title"])
-  print(body) #uncomment print statement to see body on console
+  print("Post have been submitted") #uncomment print statement to see body on console
   #reddit.subreddit('nba').submit(tabulateList[game]["title"], selftext=body, send_replies=False) #change nba to subreddit name if posting to other subreddits
   response.edit(body)
 
