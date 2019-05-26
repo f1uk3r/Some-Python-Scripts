@@ -12,8 +12,8 @@ import random
 #Team Dictionary helps to make urls for boxscore and for full-forms of abbrevation of teams
 teamDict = {
   "ATL": ["Atlanta Hawks","01", "atlanta-hawks-", "http://np.reddit.com/r/atlantahawks", "1610612737"],
-  "BKN": ["Brooklyn Nets", "02", "boston-celtics-", "http://np.reddit.com/r/bostonceltics", "1610612738"],
-  "BOS": ["Boston Celtics", "17", "brooklyn-nets-","http://np.reddit.com/r/gonets", "1610612751"],
+  "BOS": ["Boston Celtics", "02", "boston-celtics-", "http://np.reddit.com/r/bostonceltics", "1610612738"],
+  "BKN": ["Brooklyn Nets", "17", "brooklyn-nets-","http://np.reddit.com/r/gonets", "1610612751"],
   "CHA": ["Charlotte Hornets", "30", "charlotte-hornets-","http://np.reddit.com/r/charlottehornets", "1610612766"],
   "CHI": ["Chicago Bulls", "04", "chicago-bulls-","http://np.reddit.com/r/chicagobulls", "1610612741"],
   "CLE": ["Cleveland Cavaliers", "05", "cleveland-cavaliers-","http://np.reddit.com/r/clevelandcavs", "1610612739"],

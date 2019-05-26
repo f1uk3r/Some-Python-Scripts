@@ -3,6 +3,9 @@ import config
 import requests
 import json
 from datetime import date, timedelta
+import bs4, requests
+import sys
+from tabulate import tabulate
 
 #Team Dictionary helps to make urls for boxscore and for full-forms of abbrevation of teams
 teamDict = {
@@ -37,6 +40,20 @@ teamDict = {
   "UTA": ["Utah Jazz", "26", "utah-jazz-", "http://np.reddit.com/r/utahjazz"],
   "WAS": ["Washington Wizards", "27", "washington-wizards-", "http://np.reddit.com/r/washingtonwizards"]
 }
+
+
+#Save the name of Channel and link in the list here
+allChannels = [
+  ['MLG Highlights', 'https://www.youtube.com/channel/UCoh_z6QB0AGB1oxWufvbDUg'],
+  ['Moar Highlights', 'https://www.youtube.com/channel/UCeW4gzPrv1sHkXyKQgQGRFw'],
+  ['House of Highlights', 'https://www.youtube.com/channel/UCqQo7ewe87aYAe7ub5UqXMw'],
+  ['FreeDawkins', 'https://www.youtube.com/channel/UCEjOSbbaOfgnfRODEEMYlCw'], 
+  ['DownToBuck', 'https://www.youtube.com/channel/UCNaGVvWvXaYI16vAxQUfq3g'], 
+  ['ESPN', 'https://www.youtube.com/user/ESPN'],
+  ['CliveNBAParody', 'https://www.youtube.com/user/RealKingClive'],
+  ['NBA on ESPN', 'https://www.youtube.com/user/TheNBAonESPN']
+  ]
+
 #getting a reddit instance by giving appropiate credentials
 reddit = praw.Reddit(username = config.username, 
                     password = config.password,
@@ -123,6 +140,97 @@ s = input("Choose the game(s) (by index) you want to make Post Game Thread of: "
 gamesList = list(map(int, s.split()))
 
 for gameIndex in gamesList:
+
+  highlightList = []
+  requiredHighlightList = []
+  for submission in reddit.subreddit('nba').search("site:streamable.com", sort="new", time_filter="day"):
+    highlightList.append(submission)
+
+  for i in range(len(highlightList)):
+    print(str(i) + " " + highlightList[i].title)
+
+  s = input("Choose the highlights(s) (by index) you want to add in Post Game Thread: ")
+  highlightIndexList = list(map(int, s.split()))
+
+  for each in highlightIndexList:
+    requiredHighlightList.append(highlightList[each])
+
+  youtubeHighlightList = []
+  #Number of videos to list; Keep it less than 30
+  listVid = 15
+  #Dictionary for non bmp characters
+  non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+
+  print("List of Channels:")
+
+  for i in range(len(allChannels)):
+    print(str(i+1) + ". " + str(allChannels[i][0]))
+  channelIndex = 1
+  while channelIndex != 0:
+    channelIndex = int(input("Choose one of the channel by index number(Press 0 to exit): "))
+    if channelIndex > 0 and channelIndex < (len(allChannels) + 1):
+      res = requests.get(str(allChannels[channelIndex - 1][1]) + '/videos')
+      soup = bs4.BeautifulSoup(res.text, 'html.parser')
+      allVids = soup.findAll('div', {'class':'yt-lockup-content'})
+      wantedVids = allVids[:listVid]
+      vidTitles = []
+      vidLinks = []
+      vidDuration = []
+      vidUploaded = []
+      for each in wantedVids:
+        vidATag = each.find('a')
+        vidSpanTag = each.find('span')
+        vidLiTag = each.findAll('li')
+        vidTitles.append(str(vidATag.text).translate(non_bmp_map))
+        vidLinks.append("https://youtube.com" + str(vidATag['href']))
+        vidDuration.append(str(vidSpanTag.text).replace("- Duration: ", ""))
+        vidUploaded.append(vidLiTag[1].text)
+      vidIndex = range(1, listVid + 1)
+      header = ["Index", "Title", "Duration", "Uploaded"]
+      table = zip(vidIndex, vidTitles, vidDuration, vidUploaded)
+      print(tabulate((table), header, tablefmt="grid"))
+      # this will make a list of space seperated value (for eg. 5 4 2 1) and download in that order
+      choosenVids = list(map(int, input("Enter index of all videos you want to download(Space seperated values): ").split()))
+      for each in choosenVids:
+        if int(each)>listVid or int(each)<1:
+          print("Index out of bound")
+        else:
+          url = str(vidLinks[int(each-1)])
+          title = str(vidTitles[int(each-1)])
+          uploader = allChannels[channelIndex - 1][0]
+          youtubeHighlightList.append([url, title, uploader])
+          
+    elif channelIndex == 0:
+      print("Thanks")
+    else:
+      print("Please choose a number from the index or press 0 to exit") 
+
+  body = '''###Game Highlights:
+
+  - [**Full Game Highlights**]({0})
+
+      Source: {1}'''.format(str(youtubeHighlightList[0][0]), str(youtubeHighlightList[0][2]))
+
+  for i in range(1, len(youtubeHighlightList)):
+    body += '''
+
+  - [**{0}**]({1})  
+
+      Source: {2}'''.format(str(youtubeHighlightList[i][1]), str(youtubeHighlightList[i][0]), str(youtubeHighlightList[i][2]))
+
+  body += '''
+
+###Play Highlights:
+
+  '''
+
+  for each in requiredHighlightList:
+    body += '''- [**{0}**]({1}) 
+  
+      [Source](https://www.reddit.com{2}): /u/{3}
+
+  '''.format(each.title, each.url, each.permalink, each.author)
+
   game = gameIndex-1
   if game in range(len(tabulateList)):
 
@@ -137,7 +245,7 @@ for gameIndex in gamesList:
     yahooUrl = "http://sports.yahoo.com/nba/" + teamDict[tabulateList[game]["visitorTeam"]][2] + teamDict[tabulateList[game]["homeTeam"]][2] + date + teamDict[tabulateList[game]["homeTeam"]][1]
 
     #Body of reddit post starts here
-    body = '''
+    body += '''
 ||		
 |:-:|		
 |[](/''' + tabulateList[game]["visitorTeam"] + ") **" + tabulateList[game]["visitorTeamScore"]  + " - " + tabulateList[game]["homeTeamScore"] + "** [](/" + tabulateList[game]["homeTeam"] + ''')|

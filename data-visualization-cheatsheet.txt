@@ -1,0 +1,43 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+plt.plot(xlist, ylist)
+plt.show()
+plt.xlabel('Some label')
+plt.ylabel('Some label')
+plt.title('Some Title')
+
+
+For legend
+plt.plot(x, y, label="Some label")
+plt.legend()
+
+Bar chart
+plt.bar(x, y, label="bars1", color="red")
+
+Histogram
+plt.hist(xlist, bins, histtype="bar", rwidth=0.8)
+
+Scatterplot
+plt.scatter(xlist, ylist, label="something", color="blue", marker="o", s=20)
+
+StackPlot
+plt.plot([],[],label="y1", color="m")
+plt.plot([],[],label="y2", color="c")
+plt.plot([],[],label="y3", color="r")
+plt.plot([],[],label="y4", color="k")
+
+plt.stackplot(xlist, y1, y2, y3, y4, colors=['m','c','r','k'])
+
+pieChart
+plt.pie(slicesList, 
+  labels=labelList, 
+  color=colorList,
+  startangle=90,
+  shadow=True,
+  explode=(0,0.1,0,0),
+  autopct='%1.1f%%')
+
+Reading from a file with numpy
+x, y = np.loadtext('example.txt', delimiter=',', unpack=True)

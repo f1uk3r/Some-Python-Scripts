@@ -14,10 +14,10 @@ reddit = praw.Reddit(username = config.username,
 allPosts = []
 postTime = []
 
-for submission in reddit.subreddit('nba').search("post game thread", sort='top'):
+for submission in reddit.subreddit('nba').search("ryan sanders", sort='top'):
   date = datetime.datetime.fromtimestamp(submission.created_utc)
   dif = datetime.datetime.utcnow() - date
-  if dif<datetime.timedelta(days=1000):
+  if dif<datetime.timedelta(days=300):
     allPosts.append(submission)
 
 for each in allPosts:

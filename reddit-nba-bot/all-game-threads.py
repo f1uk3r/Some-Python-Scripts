@@ -6,6 +6,7 @@
 import json
 from datetime import date, timedelta, datetime
 import time
+import traceback
 import random
 import praw
 import requests
@@ -16,10 +17,10 @@ import config_reddit
 teamDict = {
     "ATL": ["Atlanta Hawks","01", "atlanta-hawks-",
             "/r/atlantahawks", "1610612737", "Hawks"],
-    "BKN": ["Brooklyn Nets", "02", "boston-celtics-",
-            "/r/bostonceltics", "1610612738", "Nets"],
-    "BOS": ["Boston Celtics", "17", "brooklyn-nets-",
-            "/r/gonets", "1610612751", "Celtics"],
+    "BKN": ["Brooklyn Nets", "17", "brooklyn-nets-",
+            "/r/gonets", "1610612751", "Nets"],
+    "BOS": ["Boston Celtics", "02", "boston-celtics-",
+            "/r/bostonceltics", "1610612738", "Celtics"],
     "CHA": ["Charlotte Hornets", "30", "charlotte-hornets-",
             "/r/charlottehornets", "1610612766", "Hornets"],
     "CHI": ["Chicago Bulls", "04", "chicago-bulls-",
@@ -350,10 +351,15 @@ while True:
                         (basicGameData["vTeam"]["score"] 
                         != basicGameData["hTeam"]["score"])):
                 #if all of the above condition met then
-                    redditGamePostList[i]["postResponse"].edit(editGameThread(
+                    try:
+                        redditGamePostList[i]["postResponse"].edit(editGameThread(
                                                 dataBoxScore, 
                                                 redditGamePostList[i]["bodyText"], 
                                                 dateToday, teamDict))
+                    except IndexError:
+                        traceback.print_exc()
+                    except KeyError:
+                        traceback.print_exc()
                 else:
                     basicGameData = dataBoxScore["basicGameData"]
                     redditGamePostList[i]["postResponse"].edit(editGameThread(
@@ -381,4 +387,5 @@ while True:
                 print(title)
     time.sleep(60)
     if all(game is None for game in redditGamePostList):
+        redditGamePostList = []
         break
