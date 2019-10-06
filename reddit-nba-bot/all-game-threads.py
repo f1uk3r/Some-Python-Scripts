@@ -200,7 +200,7 @@ def beforeGameThread(basicGameData, date, teamDict, dateTitle):
     return beforeGameBody, title
 
 
-def editGameThread(boxScoreData, bodyText, date, teamDict):
+def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
     """
     Variable boxScoreData have live data
     Variable bodyText have body when the post was originally created
@@ -300,7 +300,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict):
             vfgm = allStats["vTeam"]["totals"]["fgm"],
             vfga = allStats["vTeam"]["totals"]["fga"],
             vfgp = allStats["vTeam"]["totals"]["fgp"],
-            vtmp = allStats["vTeam"]["totals"]["tpm"],
+            vtpm = allStats["vTeam"]["totals"]["tpm"],
             vtpa = allStats["vTeam"]["totals"]["tpa"],
             vtpp = allStats["vTeam"]["totals"]["tpp"],
             vftm = allStats["vTeam"]["totals"]["ftm"],
@@ -318,7 +318,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict):
             hfgm = allStats["hTeam"]["totals"]["fgm"],
             hfga = allStats["hTeam"]["totals"]["fga"],
             hfgp = allStats["hTeam"]["totals"]["fgp"],
-            htmp = allStats["hTeam"]["totals"]["tpm"],
+            htpm = allStats["hTeam"]["totals"]["tpm"],
             htpa = allStats["hTeam"]["totals"]["tpa"],
             htpp = allStats["hTeam"]["totals"]["tpp"],
             hftm = allStats["hTeam"]["totals"]["ftm"],
@@ -505,74 +505,78 @@ def processGameThreads():
                         + dataPlayers["league"]["vegas"]
                         + dataPlayers["league"]["utah"])
     redditGamePostList = []
-    for i in range(len(games)):
-        print(i, len(redditGamePostList))
-        if i < len(redditGamePostList):
-            dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + dateToday
-                                      + "/" + str(games[i]["gameId"])
-                                      + "_boxscore.json")
+    while True:
+        for i in range(len(games)):
+            print(i, len(redditGamePostList))
+            if i < len(redditGamePostList):
+                dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + dateToday
+                                        + "/" + str(games[i]["gameId"])
+                                        + "_boxscore.json")
 
-            basicGameData = dataBoxScore["basicGameData"]
-            if redditGamePostList[i] is not None:
-                gameStartTime = datetime.strptime(
-                    basicGameData["startTimeUTC"][:19],
-                    '%Y-%m-%dT%H:%M:%S')
-                timeNow = datetime.utcnow()
-                timeDifference = gameStartTime - timeNow
-                if ((timeDifference.seconds > 0 and timeDifference.days == 0) or
-                        (timeDifference.seconds < 300 and timeDifference.days == -1)):
-                    print(timeDifference.days, timeDifference.seconds)
-                elif not ((basicGameData["clock"] == "0.0" or
-                           basicGameData["clock"] == "") and
-                          basicGameData["period"]["current"] >= 4 and
-                          (basicGameData["vTeam"]["score"]
-                           != basicGameData["hTeam"]["score"])):
-                    # if all of the above condition met then
-                    try:
+                basicGameData = dataBoxScore["basicGameData"]
+                if redditGamePostList[i] is not None:
+                    gameStartTime = datetime.strptime(
+                        basicGameData["startTimeUTC"][:19],
+                        '%Y-%m-%dT%H:%M:%S')
+                    timeNow = datetime.utcnow()
+                    timeDifference = gameStartTime - timeNow
+                    if ((timeDifference.seconds > 0 and timeDifference.days == 0) or
+                            (timeDifference.seconds < 300 and timeDifference.days == -1)):
+                        print(timeDifference.days, timeDifference.seconds)
+                    elif not ((basicGameData["clock"] == "0.0" or
+                            basicGameData["clock"] == "") and
+                            basicGameData["period"]["current"] >= 4 and
+                            (basicGameData["vTeam"]["score"]
+                            != basicGameData["hTeam"]["score"])):
+                        # if all of the above condition met then
+                        try:
+                            redditGamePostList[i]["postResponse"].edit(editGameThread(
+                                dataBoxScore,
+                                redditGamePostList[i]["bodyText"],
+                                dateToday, teamDict, dataPlayersLeague))
+                            print("thread edited")
+                        except IndexError:
+                            traceback.print_exc()
+                        except KeyError:
+                            traceback.print_exc()
+                    else:
+                        basicGameData = dataBoxScore["basicGameData"]
                         redditGamePostList[i]["postResponse"].edit(editGameThread(
                             dataBoxScore,
                             redditGamePostList[i]["bodyText"],
-                            dateToday, teamDict))
-                    except IndexError:
-                        traceback.print_exc()
-                    except KeyError:
-                        traceback.print_exc()
-                else:
-                    basicGameData = dataBoxScore["basicGameData"]
-                    redditGamePostList[i]["postResponse"].edit(editGameThread(
-                        dataBoxScore,
-                        redditGamePostList[i]["bodyText"],
-                        dateToday, teamDict))
-                    redditGamePostList[i] = None
-        else:
-            dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + dateToday
-                                      + "/" + str(games[i]["gameId"])
-                                      + "_boxscore.json")
-            basicGameData = dataBoxScore["basicGameData"]
-            gameStartTime = datetime.strptime(
-                basicGameData["startTimeUTC"][:19], '%Y-%m-%dT%H:%M:%S')
-            timeNow = datetime.utcnow()
-            timeDifference = gameStartTime - timeNow
-            if timeDifference.seconds < 3600 or timeDifference.days == -1:
-                bodyPost, title = beforeGameThread(basicGameData,
-                                                   dateToday, teamDict, dateTitle)
-                response = reddit.subreddit('nbameme').submit(title,
-                                                              selftext=bodyPost,
-                                                              send_replies=False)
-                redditGamePostList.append({"postResponse": response,
-                                           "bodyText": bodyPost})
-                print(title)
-    time.sleep(60)
-    if all(game is None for game in redditGamePostList):
-        redditGamePostList = []
-        if date.today().strftime("%Y-%m-%d") == dateToday:
-            nextGame = date.today() + timedelta(1)
-        else:
-            nextGame = date.today()
-        dateOfNextGame = nextGame.strftime("%Y%m%d")
-        data = requestApi("http://data.nba.net/prod/v1/" + dateOfNextGame + "/scoreboard.json")
-        timeFirstGame = data["games"][0]["startTimeUTC"]
-        scheduler.add_job(processGameThreads, 'date', run_date=timeFirstGame)
+                            dateToday, teamDict, dataPlayersLeague))
+                        redditGamePostList[i] = None
+                        print("game ended thread edited")
+            else:
+                dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + dateToday
+                                        + "/" + str(games[i]["gameId"])
+                                        + "_boxscore.json")
+                basicGameData = dataBoxScore["basicGameData"]
+                gameStartTime = datetime.strptime(
+                    basicGameData["startTimeUTC"][:19], '%Y-%m-%dT%H:%M:%S')
+                timeNow = datetime.utcnow()
+                timeDifference = gameStartTime - timeNow
+                if timeDifference.seconds < 3600 or timeDifference.days == -1:
+                    bodyPost, title = beforeGameThread(basicGameData,
+                                                    dateToday, teamDict, dateTitle)
+                    response = reddit.subreddit('nbameme').submit(title,
+                                                                selftext=bodyPost,
+                                                                send_replies=False)
+                    redditGamePostList.append({"postResponse": response,
+                                            "bodyText": bodyPost})
+                    print(title)
+        time.sleep(60)
+        if all(game is None for game in redditGamePostList):
+            redditGamePostList = []
+            if date.today().strftime("%Y-%m-%d") == dateToday:
+                nextGame = date.today() + timedelta(1)
+            else:
+                nextGame = date.today()
+            dateOfNextGame = nextGame.strftime("%Y%m%d")
+            data = requestApi("http://data.nba.net/prod/v1/" + dateOfNextGame + "/scoreboard.json")
+            timeFirstGame = data["games"][0]["startTimeUTC"]
+            scheduler.add_job(processGameThreads, 'date', run_date=timeFirstGame)
+            break
     
 
 scheduler.add_job(processGameThreads)
