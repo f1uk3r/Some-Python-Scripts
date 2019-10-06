@@ -3,22 +3,22 @@ import urllib
 import requests
 import json
 import time
-import config_reddit
+import config
 
 def requestApi(url):
   req = requests.get(url)
   return req.json()
 
-reddit = praw.Reddit(username = config_reddit.username, 
-                    password = config_reddit.password,
-                    client_id = config_reddit.client_id, 
-                    client_secret = config_reddit.client_secret,
+reddit = praw.Reddit(username = config.username, 
+                    password = config.password,
+                    client_id = config.client_id, 
+                    client_secret = config.client_secret,
                     user_agent = "quality check")
 
 streamableAPI = 'https://api.streamable.com/videos/'
 gfycatAPI = 'https://api.gfycat.com/v1/gfycats/'
 
-subreddit = reddit.subreddit('nbameme')
+subreddit = reddit.subreddit('nba')
 
 for submission in subreddit.stream.submissions():
   if 'gfycat' in submission.url:

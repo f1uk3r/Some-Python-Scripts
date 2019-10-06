@@ -1,26 +1,22 @@
 
 import json
 from datetime import date, timedelta, datetime
-import time
 import traceback
 import random
 import praw
 import requests
 import config
-
+import time
 from time import sleep
-from apscheduler.schedulers.blocking import BlockingScheduler
-
-scheduler = BlockingScheduler({'apscheduler.timezone': 'UTC'})
 
 # Team Dictionary helps to make urls for boxscore and for full-forms of abbrevation of teams
 teamDict = {
-    "ATL": ["Atlanta Hawks","01", "atlanta-hawks-",
+    "ATL": ["Atlanta Hawks", "01", "atlanta-hawks-",
             "/r/atlantahawks", "1610612737", "Hawks"],
-    "BKN": ["Brooklyn Nets", "02", "boston-celtics-",
-            "/r/bostonceltics", "1610612738", "Nets"],
-    "BOS": ["Boston Celtics", "17", "brooklyn-nets-",
-            "/r/gonets", "1610612751", "Celtics"],
+    "BKN": ["Brooklyn Nets", "17", "brooklyn-nets-",
+            "/r/gonets", "1610612751", "Nets"],
+    "BOS": ["Boston Celtics", "02", "boston-celtics-",
+            "/r/bostonceltics", "1610612738", "Celtics"],
     "CHA": ["Charlotte Hornets", "30", "charlotte-hornets-",
             "/r/charlottehornets", "1610612766", "Hornets"],
     "CHI": ["Chicago Bulls", "04", "chicago-bulls-",
@@ -74,23 +70,7 @@ teamDict = {
     "UTA": ["Utah Jazz", "26", "utah-jazz-",
             "/r/utahjazz", "1610612762", "Jazz"],
     "WAS": ["Washington Wizards", "27", "washington-wizards-",
-            "/r/washingtonwizards", "1610612764, ", "Wizards"],
-    "ADL": ["Adelaide 36ers", "00", "adelaide-36ers",
-            "/r/nba", "15019"],
-    "SLA": ["Buenos Aires San Lorenzo", "00", "buenos-aires-san-lorenzo",
-            "/r/nba", "12330"],
-    "FRA": ["Franca Franca", "00", "franca-franca",
-            "/r/nba", "12332"],
-    "GUA": ["Guangzhou Long-Lions", "00", "guangzhou-long-lions",
-            "/r/nba", "15018"],
-    "MAC": ["Haifa Maccabi Haifa", "00", "haifa-maccabi-haifa",
-            "/r/nba", "93"],
-    "MEL": ["Melbourne United", "00", "melbourne-united",
-            "/r/nba", "15016"],
-    "NZB": ["New Zealand Breakers", "00", "new-zealand-breakers",
-            "/r/nba", "15020"],
-    "SDS": ["Shanghai Sharks", "00", "shanghai-sharks",
-            "/r/nba", "12329"]
+            "/r/washingtonwizards", "1610612764, ", "Wizards"]
 }
 
 # getting a reddit instance by giving appropiate credentials
@@ -485,7 +465,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict):
     return body
 
 
-def processGameThreads():
+def processGameThread():
     # finding date of game
     now = date.today() - timedelta(1)
     dateToday = now.strftime("%Y%m%d")  # Check the date before using script
@@ -544,7 +524,7 @@ def processGameThreads():
                         redditGamePostList[i]["bodyText"],
                         dateToday, teamDict))
                     redditGamePostList[i] = None
-        else:
+        elif games[i]["vTeam"]["triCode"] == "SAS" or games[i]["hTeam"]["triCode"] == "SAS":
             dataBoxScore = requestApi("http://data.nba.net/prod/v1/" + dateToday
                                       + "/" + str(games[i]["gameId"])
                                       + "_boxscore.json")
@@ -565,15 +545,5 @@ def processGameThreads():
     time.sleep(60)
     if all(game is None for game in redditGamePostList):
         redditGamePostList = []
-        if date.today().strftime("%Y-%m-%d") == dateToday:
-            nextGame = date.today() + timedelta(1)
-        else:
-            nextGame = date.today()
-        dateOfNextGame = nextGame.strftime("%Y%m%d")
-        data = requestApi("http://data.nba.net/prod/v1/" + dateOfNextGame + "/scoreboard.json")
-        timeFirstGame = data["games"][0]["startTimeUTC"]
-        scheduler.add_job(processGameThreads, 'date', run_date=timeFirstGame)
-    
 
-scheduler.add_job(processGameThreads)
-scheduler.start()
+processGameThread()
