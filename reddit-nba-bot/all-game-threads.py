@@ -559,7 +559,7 @@ def processGameThreads():
                 if timeDifference.seconds < 3600 or timeDifference.days == -1:
                     bodyPost, title = beforeGameThread(basicGameData,
                                                     dateToday, teamDict, dateTitle)
-                    response = reddit.subreddit('nbameme').submit(title,
+                    response = reddit.subreddit('nba').submit(title,
                                                                 selftext=bodyPost,
                                                                 send_replies=False)
                     redditGamePostList.append({"postResponse": response,
