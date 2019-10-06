@@ -234,12 +234,16 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
             yahoourl = yahooUrl
 )
 
-    body += """||
+    body += """
+
+||
 |:-:|											
 |&nbsp;|		
-|**GAME SUMMARY**|	
+|**GAME SUMMARY**|
+
 |**Location:** {arena}({attendance}), **Clock:** {clock}|
 |**Officials:** {referee1}, {referee2} and {referee3}|
+
 """.format(
             arena = basicGameData["arena"]["name"],
             attendance = basicGameData["attendance"],
@@ -286,6 +290,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
 |:-:|		
 |&nbsp;|		
 |**TEAM STATS**|
+
 |**Team**|**PTS**|**FG**|**FG%**|**3P**|**3P%**|**FT**|**FT%**|**OREB**|**TREB**|**AST**|**PF**|**STL**|**TO**|**BLK**|
 |:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|
 |{vTeamName}|{vpts}|{vfgm}-{vfga}|{vfgp}%|{vtpm}-{vtpa}|{vtpp}%|{vftm}-{vfta}|{vftp}%|{voreb}|{vtreb}|{vast}|{vpf}|{vstl}|{vto}|{vblk}|
@@ -343,10 +348,12 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
             hfb = allStats["hTeam"]["fastBreakPoints"]
 )
 
-    body += """||		
+    body += """
+||		
 |:-:|		
 |&nbsp;|		
 |**TEAM LEADERS**|
+
 |**Team**|**Points**|**Rebounds**|**Assists**|
 |:--|:--|:--|:--|
 |{vTeam}|**{vpts}** {vply1}|**{vreb}** {vply2}|**{vast}** {vply3}|
@@ -368,10 +375,12 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
         hply3 = findPlayerName(dataPlayersLeague, allStats["hTeam"]["leaders"]["assists"]["players"][0]["personId"])
 )
 
-    body += """||		
+    body += """
+||		
 |:-:|		
 |&nbsp;|		
 |**PLAYER STATS**|
+
 ||||||||||||||||
 |:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|:--|
 **[](/{vTeamLogo}) {vTeamName}**|**MIN**|**FGM-A**|**3PM-A**|**FTM-A**|**ORB**|**DRB**|**REB**|**AST**|**STL**|**BLK**|**TO**|**PF**|**+/-**|**PTS**|
@@ -479,6 +488,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
                     )
     # footer
     body += """
+
 ||
 |:-:|
 |^[bot-script](https://github.com/f1uk3r/Some-Python-Scripts/blob/master/reddit-nba-bot/reddit-boxscore-bot.py) ^by ^/u/f1uk3r|  """
@@ -487,7 +497,7 @@ def editGameThread(boxScoreData, bodyText, date, teamDict, dataPlayersLeague):
 
 def processGameThreads():
     # finding date of game
-    now = date.today() - timedelta(1)
+    now = date.today()
     dateToday = now.strftime("%Y%m%d")  # Check the date before using script
     dateTitle = now.strftime("%B %d, %Y")
     # print(date)
